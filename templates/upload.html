@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload</title>
+    <link rel="icon" href="data:image/x-icon;,">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+    {% include '_navbar.html' %}
+
+    <div class="container mt-5">
+        <div class="text-center">
+            <h1>Upload File</h1>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" name="file" required>
+                <button type="submit" class="btn btn-primary mt-3">Upload</button>
+                <div id="alertPlaceholder"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            fetch('/post-upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) { // Ini akan true jika response status 200-299
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Mengurai body response menjadi JSON
+            })
+            .then(data => {
+                if (data.status) { // data.status didapat dari response JSON bukan dari response HTTP
+                    showAlert('Upload berhasil!', 'success');
+                } else {
+                    showAlert('Upload gagal: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Upload gagal. Terjadi kesalahan: ' + error.message, 'danger');
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+        });
+
+        function showAlert(message, type) {
+            const wrapper = document.createElement('div');
+            let linkHTML = '';
+            if (type === 'success') {
+                // Hanya tambahkan link ini jika alert adalah tipe 'success'
+                linkHTML = '<a href="/calculate" class="alert-link">Process CSV</a>';
+            }
+            
+            wrapper.innerHTML = [
+                `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                `   ${message} ${linkHTML}`,
+                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                '</div>'
+            ].join('');
+
+            alertPlaceholder.append(wrapper);
+        }
+
+    </script>
+</body>
+</html>
